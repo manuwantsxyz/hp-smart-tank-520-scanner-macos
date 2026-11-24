@@ -60,7 +60,11 @@ Quit **Image Capture** and **Preview** while scanning, because the scanner serve
 
 ## Looking to print over USB?
 
-This app only **scans**. For **printing**, HP's regular macOS driver still works with the Smart Tank 520 over USB. That driver is universal, so it runs natively on Apple Silicon without Rosetta.
+This app only **scans**. For **printing**, this setup works on our test Mac (Smart Tank 520 over USB, macOS 15): HP's macOS driver for the **HP Smart Tank 500 series**.
+
+- That driver is for an older sibling model and doesn't mention the 520, but it prints fine with it.
+- The driver is universal, so it runs natively on Apple Silicon without Rosetta.
+- It's a workaround that worked for us, not something HP documents for the 520.
 
 1. Download **HP Easy Start** from HP:
    - Direct download: [HP_Easy_Start.app.zip](https://ftp.hp.com/pub/softlib/software12/HP_Quick_Start/osx/HP_Easy_Start.app.zip) (from `ftp.hp.com`).
@@ -68,6 +72,8 @@ This app only **scans**. For **printing**, HP's regular macOS driver still works
    - Or with Homebrew: `brew install --cask hp-easy-start`.
 2. Connect the printer with the USB cable, open HP Easy Start, and let it install the software for your printer. On our test Mac it installed the **HP Smart Tank 500 series** driver.
 3. If the printer doesn't appear, or macOS picks a generic driver, add it yourself: go to **System Settings → Printers & Scanners → Add Printer**, select the Smart Tank (USB), then under **Use** choose **Select Software… → HP Smart Tank 500 series**.
+
+Some people on HP's forum report that HP Easy Start finishes without installing any driver. In that case **HP Smart Tank 500 series** won't appear in step 3 either. We haven't hit this ourselves, so we can't confirm a fix. If it works or fails for you, please open an issue.
 
 If Safari saves the download as `HP_Easy_Start.app.zip.download`, delete it and download it again, or use another browser.
 
