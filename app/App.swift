@@ -112,7 +112,9 @@ struct ContentView: View {
             }
             .navigationTitle(model.info?.model ?? "Escáner Libre")
         }
-        .onAppear { model.refreshDevice() }
+        .onAppear {
+            if Demo.outDir != nil { Task { await Demo.run(model) } } else { model.refreshDevice() }
+        }
     }
 
     private var sidebar: some View {
@@ -253,12 +255,14 @@ struct ResultsBar: View {
                         .help("Arrastrá para soltarlo en otra app")
                 }
             }
+            // The bar can be evaluated once more after the results are cleared: never index blindly.
+            let first = model.results.first?.url
             VStack(alignment: .leading, spacing: 2) {
-                Text(model.results.count == 1 ? model.results[0].url.lastPathComponent
+                Text(model.results.count == 1 ? (first?.lastPathComponent ?? "")
                                                : "\(model.results.count) archivos")
                     .lineLimit(1)
                     .truncationMode(.middle)
-                Text(model.results[0].url.deletingLastPathComponent().path
+                Text((first?.deletingLastPathComponent().path ?? "")
                         .replacingOccurrences(of: NSHomeDirectory(), with: "~"))
                     .font(.caption)
                     .foregroundStyle(.secondary)

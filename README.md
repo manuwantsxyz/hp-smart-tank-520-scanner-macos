@@ -1,95 +1,128 @@
-# Escáner Libre
+# HP Smart Tank 520 Scanner for macOS
 
-App de macOS para escanear con la **HP Smart Tank 520** por USB **sin los drivers de HP** y sin pasar por el servicio de macOS que la deja colgada en "Waiting for scanner" / "Esperando al escáner".
+**Escáner Libre** is a native macOS app for scanning with the **HP Smart Tank 520** over USB. It needs **no HP drivers** and bypasses the macOS service that leaves Image Capture stuck on *"Waiting for scanner"*.
 
-La experiencia es la de **Captura de Imagen**: vista previa del vidrio, seleccionar un área y escanear solo esa parte en alta resolución. Además suma:
+It follows the Image Capture workflow: a quick overview of the glass, then a high-resolution scan of only the area you select. On top of that it adds:
 
-- **Varias selecciones** en un mismo escaneo (un archivo por elemento), con **detección automática** del documento o de cada foto, y corrección de inclinación.
-- **Proporciones fijas** para redes: 1:1, 4:5, 9:16, 16:9, 1.91:1 y más, verticales y horizontales. El archivo sale con la proporción exacta (por ejemplo 1080 × 1350).
-- **Modo Documento PDF** para libros y documentos largos: página por página, opción de dividir un libro abierto en 2 páginas, escaneo continuo con tiempo para dar vuelta la hoja, reordenar arrastrando y **PDF con texto buscable** (OCR en español e inglés).
-- Color, escala de grises y blanco y negro, rotación, brillo, contraste, nitidez y umbral.
-- Guardar como JPEG, PNG, TIFF, HEIC o PDF. **Abrir con** cualquier app (Affinity, Photoshop, Vista Previa…), **Copiar** al portapapeles o arrastrar la miniatura.
+- **Multiple selections** in one scan (one file per item), with **automatic detection** of the document or of each photo, plus deskew.
+- **Aspect-ratio presets** for social media: 1:1, 4:5, 9:16, 16:9, 1.91:1 and more, portrait and landscape. The file comes out at the exact ratio (e.g. 1080 × 1350).
+- **Document PDF mode** for books and long documents:
+  - scan page by page;
+  - split an open book into two pages;
+  - continuous scanning with time to turn the page;
+  - drag to reorder;
+  - **searchable PDF** with OCR (English and Spanish).
+- Color, grayscale and black & white, rotation, brightness, contrast, sharpness and threshold.
+- Save as JPEG, PNG, TIFF, HEIC or PDF. **Open With** any app (Affinity, Photoshop, Preview…), **Copy** to the clipboard, or drag the thumbnail out.
 
-> No está afiliada a HP Inc. "HP" y "Smart Tank" son marcas de HP Inc. y se mencionan solo para indicar compatibilidad.
+> The app's interface is in Spanish.
+>
+> Not affiliated with HP Inc. "HP" and "Smart Tank" are trademarks of HP Inc. and are used only to describe compatibility.
 
-## Requisitos
+## Screenshots
 
-- macOS 14 Sonoma o posterior, en Mac con Apple Silicon o Intel.
-- La impresora conectada **por cable USB**.
-- Nada más: la app no necesita Python, Homebrew ni drivers.
+Overview of the glass with two detected items, each saved as its own file:
 
-**Probada con:** HP Smart Tank 520 (USB `03f0:4554`, se reporta como "Smart Tank 520_540 series").
+![Overview with two selections](docs/screenshots/overview.png)
 
-**Debería funcionar con:** otras impresoras que escanean por eSCL sobre IPP-over-USB (otras Smart Tank, DeskJet y ENVY recientes de HP, y modelos de otras marcas con "AirPrint/AirScan por USB"). No están probadas. Si probás una, contame en un *issue* si funcionó.
+Aspect-ratio lock (4:5 for Instagram):
 
-## Instalación
+![Aspect ratio presets](docs/screenshots/aspect-ratio.png)
 
-1. Descargá `Escaner-Libre-…-macOS.zip` de [Releases](../../releases) y descomprimilo.
-2. Mové **Escáner Libre.app** a Aplicaciones.
-3. La primera vez macOS va a decir que no puede verificar al desarrollador, porque la app no está notarizada por Apple. Para abrirla:
-   - En Finder, **clic derecho → Abrir → Abrir**.
-   - Si no aparece la opción: **Configuración del Sistema → Privacidad y seguridad**, bajá hasta el aviso de "Escáner Libre" y elegí **Abrir igual**.
-   - O desde la Terminal: `xattr -dr com.apple.quarantine "/Applications/Escáner Libre.app"`
+Document PDF mode for books and multi-page documents:
 
-Mientras escaneás, cerrá **Captura de Imagen** y **Vista Previa**: el escáner atiende a una sola app por vez.
+![Document PDF mode](docs/screenshots/document-pdf.png)
 
-## Uso rápido
+*The screenshots use generated sample content, not real scans.*
 
-| Acción | Cómo |
+## Requirements
+
+- macOS 14 Sonoma or later. The app is a universal build for **Apple Silicon** and Intel Macs.
+- The printer connected **with a USB cable**.
+- Nothing else: no Python, Homebrew or drivers.
+
+**Tested with:** HP Smart Tank 520 (USB ID `03f0:4554`, which reports itself as "Smart Tank 520_540 series").
+
+**May also work with** other printers that scan over eSCL through IPP-over-USB, such as other Smart Tank, recent DeskJet and ENVY models, and printers from other brands that support "AirPrint/AirScan over USB". These are untested. If you try one, please open an issue and say whether it worked.
+
+## Install
+
+1. Download `Escaner-Libre-…-macOS.zip` from [Releases](../../releases) and unzip it.
+2. Move **Escáner Libre.app** to Applications.
+3. The app is not notarized by Apple, so the first time macOS will say it can't verify the developer. To open it, use one of these:
+   - In Finder, **right-click → Open → Open**.
+   - Or go to **System Settings → Privacy & Security**, scroll to the "Escáner Libre" notice and click **Open Anyway**.
+   - Or run in Terminal: `xattr -dr com.apple.quarantine "/Applications/Escáner Libre.app"`
+
+Quit **Image Capture** and **Preview** while scanning, because the scanner serves one app at a time.
+
+## Quick start
+
+| Action | How (Spanish UI label) |
 |---|---|
-| Vista previa del vidrio | **Vista general** (⌥⌘R) |
-| Elegir un área | Arrastrar sobre la vista previa. Con ⇧ o ⌘ se agregan más áreas |
-| Fijar proporción | Detalles → Área → **Proporción**. El botón ↔ cambia entre vertical y horizontal |
-| Escanear | **Escanear** (⌘R). Cancelar con ⌘. |
-| Libro / PDF de varias páginas | Modo **Documento PDF** (⌘B) → **Escanear página** → **Guardar PDF** (⌘S) |
-| Copiar el último escaneo | **Copiar** o ⌘C |
+| Preview the glass | **Vista general** (⌥⌘R) |
+| Select an area | Drag on the preview. Hold ⇧ or ⌘ to add more areas |
+| Lock the aspect ratio | Details → Área → **Proporción**. The ↔ button switches portrait/landscape |
+| Scan | **Escanear** (⌘R). Cancel with ⌘. |
+| Book / multi-page PDF | **Documento PDF** mode (⌘B) → **Escanear página** → **Guardar PDF** (⌘S) |
+| Copy the last scan | **Copiar** or ⌘C |
 
-## ¿Por qué no anda bien con el driver de HP / Captura de Imagen?
+## Why Image Capture and the HP driver fail
 
-La impresora no usa un driver de escáner tradicional. Escanea con **eSCL**, que es HTTP con XML, a través del USB (IPP-over-USB). En macOS ese canal pasa por un proxy del sistema, `ippusbd`, que **se desincroniza**: si una app se desconecta antes de leer toda una respuesta, la siguiente app recibe la respuesta vieja. A partir de ahí Captura de Imagen queda en "Waiting for scanner" o falla con el error `-21345`.
+This printer doesn't use a classic scanner driver. It scans with **eSCL**, which is HTTP and XML carried over USB (IPP-over-USB).
 
-Además, el módulo "HP Scanner 3" de HP no incluye a este modelo. Esta app habla eSCL directamente con el USB usando libusb, descarta lo que haya quedado pendiente en el canal y lee de a un paquete. Por eso escanea siempre igual.
+On macOS that channel goes through a system proxy, `ippusbd`, which **gets out of sync**. If an app disconnects before reading a whole response, the leftover data is handed to the next app as its answer. From then on, Image Capture hangs on "Waiting for scanner" or fails with error `-21345`.
 
-El diagnóstico completo está en [docs/diagnostico.md](docs/diagnostico.md).
+HP's "HP Scanner 3" module doesn't include this model, so installing HP's software doesn't help.
 
-## Compilar desde el código
+This app talks eSCL to the USB interface directly through libusb. It clears out any leftover data and reads one USB packet at a time, so scans stay reliable.
 
-Necesitás las Command Line Tools de Xcode (`xcode-select --install`).
+The full write-up is in [docs/diagnosis.md](docs/diagnosis.md).
+
+## Build from source
+
+You need the Xcode Command Line Tools (`xcode-select --install`).
 
 ```sh
 app/build.sh             # → app/build/Escáner Libre.app (universal)
-app/build.sh --install   # además la copia a ~/Applications
-app/build.sh --release   # además arma dist/Escaner-Libre-<versión>-macOS.zip
-app/tests/run.sh         # pruebas; las que usan el escáner necesitan la impresora conectada
+app/build.sh --install   # also copies it to ~/Applications
+app/build.sh --release   # also creates dist/Escaner-Libre-<version>-macOS.zip
+app/tests/run.sh         # tests (the scanner tests need the printer connected)
 app/tests/run.sh --offline
 ```
 
-`build.sh` descarga y compila **libusb** (versión fija, con verificación SHA-256) como biblioteca universal y la incluye dentro de la app. Para firmar con una identidad de desarrollador: `SIGN_ID="Developer ID Application: …" app/build.sh --release`.
+`build.sh` downloads **libusb**, verifies it with SHA-256, builds it as a universal library and bundles it inside the app. The version is pinned.
 
-### Estructura
+To sign with a developer identity:
 
-```
-app/        App SwiftUI: Backend.swift (driver eSCL por USB), Model, interfaz, procesamiento de imagen, PDF y OCR
-app/tests/  Pruebas (con y sin escáner)
-cli/        Versión de línea de comandos en Python (hpscan.py), con la que empezó el proyecto
-scripts/    Compilación de libusb
-docs/       Diagnóstico del problema con macOS
+```sh
+SIGN_ID="Developer ID Application: …" app/build.sh --release
 ```
 
-### Línea de comandos (opcional)
+To regenerate the screenshots:
+
+```sh
+ESCANER_DEMO=/tmp/shots "app/build/Escáner Libre.app/Contents/MacOS/EscanerLibre"
+```
+
+### Layout
+
+```
+app/        SwiftUI app: Backend.swift (eSCL-over-USB driver), model, UI, image processing, PDF and OCR
+app/tests/  Tests (with and without the scanner)
+cli/        Command-line version in Python (hpscan.py), where the project started
+scripts/    libusb build
+docs/       Diagnosis of the macOS issue, screenshots
+```
+
+### Command line (optional)
 
 ```sh
 brew install libusb && python3 -m venv .venv && .venv/bin/pip install pyusb
-cli/escanear -o ~/Desktop/documento.pdf --dpi 300
+cli/escanear -o ~/Desktop/document.pdf --dpi 300
 .venv/bin/python cli/hpscan.py info
 ```
 
-## Licencia
+## License
 
-[MIT](LICENSE). La app incluye **libusb** (LGPL-2.1) como biblioteca dinámica separada: ver [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
----
-
-### In English
-
-**Escáner Libre** is a macOS app (UI in Spanish) for scanning with an **HP Smart Tank 520** over USB without HP drivers. It speaks eSCL over IPP-over-USB directly with a bundled libusb, which works around macOS's `ippusbd` proxy desyncing ("Waiting for scanner", error -21345). It offers an Image Capture–style overview and region scanning, aspect-ratio presets for social media, multi-page searchable PDFs, and Open With / Copy. It needs macOS 14+ (Apple Silicon or Intel). The app is unsigned: right-click → Open the first time. Other eSCL-over-USB printers may work but are untested.
+[MIT](LICENSE). The app bundles **libusb** (LGPL-2.1) as a separate dynamic library. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

@@ -15,7 +15,7 @@ LIBUSB="$ROOT/vendor/libusb"
 "$ROOT/scripts/build-libusb.sh"
 
 rm -rf "$BUILD" && mkdir -p "$BUILD"
-SOURCES=("$HERE"/{App,Backend,Batch,Imaging,Model,Inspector,PreviewCanvas}.swift)
+SOURCES=("$HERE"/{App,Backend,Batch,Demo,Imaging,Model,Inspector,PreviewCanvas}.swift)
 for ARCH in arm64 x86_64; do
   swiftc -swift-version 5 -O -parse-as-library -target "$ARCH-apple-macos14.0" \
     -import-objc-header "$HERE/CLibusb.h" -Xcc -I"$LIBUSB/include/libusb-1.0" \
