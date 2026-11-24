@@ -1,0 +1,28 @@
+# Compilación
+app/build/
+app/tests/.bin/
+dist/
+vendor/
+.venv/
+__pycache__/
+*.pyc
+
+# Datos locales y de diagnóstico (pueden tener el número de serie de la impresora)
+caps.xml
+diag/
+*.log
+probe.py
+lowlevel_test.py
+app/tests/detect/
+app/tests/repro/
+app/tests/rot/
+
+# Escaneos e imágenes de prueba
+*.jpg
+*.jpeg
+*.heic
+*.tiff
+*.pdf
+/*.png
+
+.DS_Store

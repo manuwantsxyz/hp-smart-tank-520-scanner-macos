@@ -1,0 +1,10 @@
+#!/bin/zsh
+# Escanea desde la terminal (versión Python del driver). Requiere: brew install libusb && pip install pyusb
+# Ejemplos:
+#   escanear                      -> PDF color 300 dpi A4 en la carpeta actual
+#   escanear -o ~/Desktop/dni.pdf
+#   escanear --format jpeg --dpi 600 --color gray
+HERE="${0:A:h}"
+PY="$HERE/../.venv/bin/python"
+[[ -x "$PY" ]] || PY=python3
+exec "$PY" "$HERE/hpscan.py" scan "$@"
