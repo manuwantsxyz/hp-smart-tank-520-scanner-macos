@@ -114,7 +114,7 @@ You need the Xcode Command Line Tools (`xcode-select --install`).
 
 ```sh
 app/build.sh             # → app/build/HPST520 Scanner.app (universal)
-app/build.sh --install   # also copies it to ~/Applications
+app/build.sh --install   # also copies it to /Applications
 app/build.sh --release   # also creates dist/HPST520-Scanner-<version>-macOS.zip
 app/tests/run.sh         # tests (the scanner tests need the printer connected)
 app/tests/run.sh --offline

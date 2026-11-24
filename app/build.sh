@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Construye "HPST520 Scanner.app" (universal: Apple Silicon + Intel, macOS 14+) en build/.
 #   ./build.sh            → build/HPST520 Scanner.app
-#   ./build.sh --install  → además la copia a ~/Applications
+#   ./build.sh --install  → además la copia a /Applications
 #   ./build.sh --release  → además arma dist/HPST520-Scanner-<versión>-macOS.zip
 set -euo pipefail
 HERE="${0:A:h}"
@@ -76,10 +76,9 @@ fi
 echo "OK: $APP"
 
 if [[ " $* " == *" --install "* ]]; then
-  rm -rf "$HOME/Applications/$NAME.app"
-  mkdir -p "$HOME/Applications"
-  cp -R "$APP" "$HOME/Applications/"
-  echo "Instalada en ~/Applications/$NAME.app"
+  rm -rf "/Applications/$NAME.app"
+  cp -R "$APP" /Applications/
+  echo "Instalada en /Applications/$NAME.app"
 fi
 
 if [[ " $* " == *" --release "* ]]; then
