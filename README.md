@@ -66,18 +66,22 @@ This app only **scans**. For **printing**, this setup works on our test Mac (Sma
 - The driver is universal, so it runs natively on Apple Silicon without Rosetta.
 - It's a workaround that worked for us, not something HP documents for the 520.
 
-1. Download **HP Easy Start** from HP:
-   - Direct download: [HP_Easy_Start.app.zip](https://ftp.hp.com/pub/softlib/software12/HP_Quick_Start/osx/HP_Easy_Start.app.zip) (from `ftp.hp.com`).
-   - HP's page: [HP Easy Start](https://support.hp.com/us-en/drivers/selfservice/hp-easy-start/7376041).
-   - Or with Homebrew: `brew install --cask hp-easy-start`.
-2. Connect the printer with the USB cable, open HP Easy Start, and let it install the software for your printer. On our test Mac it installed the **HP Smart Tank 500 series** driver.
-3. If the printer doesn't appear, or macOS picks a generic driver, add it yourself: go to **System Settings → Printers & Scanners → Add Printer**, select the Smart Tank (USB), then under **Use** choose **Select Software… → HP Smart Tank 500 series**.
+The tool that worked is **HP Easy Admin**, HP's less-known utility for downloading drivers directly. The usual HP Easy Start and HP Smart apps didn't get us a working USB print driver.
 
-Some people on HP's forum report that HP Easy Start finishes without installing any driver. In that case **HP Smart Tank 500 series** won't appear in step 3 either. We haven't hit this ourselves, so we can't confirm a fix. If it works or fails for you, please open an issue.
+1. Download **HP Easy Admin** from HP:
+   - Direct download: [HP_Easy_Admin.app.zip](https://ftp.hp.com/pub/softlib/software12/HP_Quick_Start/osx/Applications/HP_Easy_Admin.app.zip) (from `ftp.hp.com`).
+   - Or with Homebrew: `brew install --cask hp-easy-admin`.
+2. Unzip it, open **HP Easy Admin**, and pick your printer from the long model list. **HP Smart Tank 520** is listed (and so is **HP Smart Tank 500**). Then download and install the driver package it offers.
+3. Connect the printer with the USB cable. If macOS doesn't set it up with the HP driver on its own, add it yourself:
+   - Go to **System Settings → Printers & Scanners → Add Printer**.
+   - Select the Smart Tank (USB).
+   - Under **Use**, choose **Select Software… → HP Smart Tank 500 series**.
 
-If Safari saves the download as `HP_Easy_Start.app.zip.download`, delete it and download it again, or use another browser.
+On our Mac, the printer ends up on the **HP Smart Tank 500 series** driver and prints correctly. If this doesn't work for you, please open an issue saying which model you picked in step 2.
 
-HP Easy Start and the driver are HP's software and aren't part of this project. HP's own scanning software doesn't support the 520 over USB on macOS, which is why this app exists.
+If Safari saves the download as `HP_Easy_Admin.app.zip.download`, delete it and download it again, or use another browser.
+
+HP Easy Admin and the driver are HP's software and aren't part of this project. HP's own scanning software doesn't support the 520 over USB on macOS, which is why this app exists.
 
 ## Quick start
 
