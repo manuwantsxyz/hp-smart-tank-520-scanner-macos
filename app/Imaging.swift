@@ -20,9 +20,9 @@ enum ScanKind: String, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .color: return "Color"
-        case .gray: return "Escala de grises"
-        case .bw: return "Blanco y negro"
+        case .color: return L("Color")
+        case .gray: return L("Escala de grises")
+        case .bw: return L("Blanco y negro")
         }
     }
     /// What the driver asks the scanner for.
@@ -384,12 +384,12 @@ enum Imaging {
     static func writePage(_ img: CGImage, dpi: Int, lossless: Bool, to url: URL) throws {
         let type = (lossless ? UTType.png : UTType.jpeg).identifier as CFString
         guard let dest = CGImageDestinationCreateWithURL(url as CFURL, type, 1, nil) else {
-            throw ScanError.failed("No pude guardar la página.")
+            throw ScanError.failed(L("No pude guardar la página."))
         }
         var props: [CFString: Any] = [kCGImagePropertyDPIWidth: dpi, kCGImagePropertyDPIHeight: dpi]
         if !lossless { props[kCGImageDestinationLossyCompressionQuality] = 0.85 }
         CGImageDestinationAddImage(dest, img, props as CFDictionary)
-        guard CGImageDestinationFinalize(dest) else { throw ScanError.failed("No pude guardar la página.") }
+        guard CGImageDestinationFinalize(dest) else { throw ScanError.failed(L("No pude guardar la página.")) }
     }
 
     static func thumbnail(_ img: CGImage, maxSide: CGFloat = 360) -> CGImage? {
@@ -416,8 +416,8 @@ enum Imaging {
     static func writePDF(pages: [(url: URL, dpi: Int)], to url: URL, ocr: Bool,
                          progress: (Int) -> Void) throws {
         guard let ctx = CGContext(url as CFURL, mediaBox: nil,
-                                  [kCGPDFContextCreator: "Escáner Libre"] as CFDictionary) else {
-            throw ScanError.failed("No pude crear el PDF.")
+                                  [kCGPDFContextCreator: "HPST520 Scanner"] as CFDictionary) else {
+            throw ScanError.failed(L("No pude crear el PDF."))
         }
         for (i, page) in pages.enumerated() {
             progress(i)
@@ -428,7 +428,7 @@ enum Imaging {
                 } else {
                     image = load(page.url)
                 }
-                guard let img = image else { throw ScanError.failed("No pude leer la página \(i + 1).") }
+                guard let img = image else { throw ScanError.failed(L("No pude leer la página %ld.", i + 1)) }
                 let w = Double(img.width) / Double(page.dpi) * 72, h = Double(img.height) / Double(page.dpi) * 72
                 var box = CGRect(x: 0, y: 0, width: w, height: h)
                 ctx.beginPage(mediaBox: &box)
@@ -483,7 +483,7 @@ enum Imaging {
     static func save(_ images: [CGImage], dpi: Int, format: OutputFormat, combine: Bool,
                      folder: URL, base: String) throws -> [URL] {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let name = base.trimmingCharacters(in: .whitespaces).isEmpty ? "Escaneo" : base
+        let name = base.trimmingCharacters(in: .whitespaces).isEmpty ? L("Escaneo") : base
         var saved: [URL] = []
 
         if format == .pdf {
@@ -500,7 +500,7 @@ enum Imaging {
                     if let page { doc.insert(page, at: doc.pageCount) }
                 }
                 let url = nextFreeURL(folder: folder, base: name, ext: "pdf")
-                guard doc.write(to: url) else { throw ScanError.failed("No pude guardar \(url.lastPathComponent).") }
+                guard doc.write(to: url) else { throw ScanError.failed(L("No pude guardar %@.", url.lastPathComponent)) }
                 saved.append(url)
             }
             return saved
@@ -509,7 +509,7 @@ enum Imaging {
         for img in images {
             let url = nextFreeURL(folder: folder, base: name, ext: format.ext)
             guard let dest = CGImageDestinationCreateWithURL(url as CFURL, format.utType.identifier as CFString, 1, nil) else {
-                throw ScanError.failed("No pude crear \(url.lastPathComponent).")
+                throw ScanError.failed(L("No pude crear %@.", url.lastPathComponent))
             }
             var props: [CFString: Any] = [
                 kCGImagePropertyDPIWidth: dpi,
@@ -524,7 +524,7 @@ enum Imaging {
             // The HEIC encoder rejects 8-bit grayscale: hand it an RGB copy.
             let toWrite = (format == .heic && img.colorSpace?.model == .monochrome) ? (rgbCopy(img) ?? img) : img
             CGImageDestinationAddImage(dest, toWrite, props as CFDictionary)
-            guard CGImageDestinationFinalize(dest) else { throw ScanError.failed("No pude guardar \(url.lastPathComponent).") }
+            guard CGImageDestinationFinalize(dest) else { throw ScanError.failed(L("No pude guardar %@.", url.lastPathComponent)) }
             saved.append(url)
         }
         return saved

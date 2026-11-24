@@ -14,11 +14,13 @@ struct ScannerInfo: Decodable, Sendable {
 enum ScanError: LocalizedError {
     case failed(String)
     case cancelled
+    case busy
 
     var errorDescription: String? {
         switch self {
         case .failed(let m): return m
-        case .cancelled: return "Escaneo cancelado."
+        case .cancelled: return L("Escaneo cancelado.")
+        case .busy: return L("El escáner está en uso por otra app (Captura de Imagen o Vista Previa). Cerrala y probá de nuevo.")
         }
     }
 }
@@ -49,7 +51,7 @@ final class Backend: @unchecked Sendable {
         session.lock()
         defer { session.unlock() }
         flag.withLock { cancelRequested = false }
-        guard let ctx else { throw ScanError.failed("No pude inicializar USB.") }
+        guard let ctx else { throw ScanError.failed(L("No pude inicializar USB.")) }
         let http = try UsbHttp(ctx: ctx, isCancelled: { [unowned self] in self.isCancelled })
         defer { http.close() }
         do {
@@ -65,7 +67,7 @@ final class Backend: @unchecked Sendable {
             let state = tag(try http.text("GET", "/eSCL/ScannerStatus"), "State")
             let res = Set(matches(#"<scan:XResolution>(\d+)</scan:XResolution>"#, caps).compactMap(Int.init)).sorted()
             guard let w = tag(caps, "MaxWidth").flatMap(Int.init), let h = tag(caps, "MaxHeight").flatMap(Int.init) else {
-                throw ScanError.failed("La impresora no informó un escáner (eSCL).")
+                throw ScanError.failed(L("La impresora no informó un escáner (eSCL)."))
             }
             var model = tag(caps, "MakeAndModel")
             if http.isHP, let m = model, !m.uppercased().hasPrefix("HP") { model = "HP " + m }
@@ -83,11 +85,11 @@ final class Backend: @unchecked Sendable {
             for i in 0..<60 {  // the head takes a few seconds to park after a scan
                 state = tag(try http.text("GET", "/eSCL/ScannerStatus"), "State")
                 if state == "Idle" { break }
-                if i == 59 { throw ScanError.failed("El escáner no está libre (estado: \(state ?? "?")).") }
+                if i == 59 { throw ScanError.failed(L("El escáner no está libre (estado: %@).", state ?? "?")) }
                 try http.sleep(1)
             }
             guard let maxW = tag(caps, "MaxWidth").flatMap(Int.init), let maxH = tag(caps, "MaxHeight").flatMap(Int.init) else {
-                throw ScanError.failed("La impresora no informó un escáner (eSCL).")
+                throw ScanError.failed(L("La impresora no informó un escáner (eSCL)."))
             }
             var x = 0, y = 0, w = maxW, h = maxH
             if let r = region, r.count == 4 {
@@ -119,7 +121,7 @@ final class Backend: @unchecked Sendable {
             let job = try http.request("POST", "/eSCL/ScanJobs", body: Data(settings.utf8))
             guard job.status == 201, let loc = job.headers["location"] else {
                 let msg = String(decoding: job.body.prefix(300), as: UTF8.self)
-                throw ScanError.failed("El escáner rechazó el trabajo (HTTP \(job.status)): \(msg)")
+                throw ScanError.failed(L("El escáner rechazó el trabajo (HTTP %ld): %@", job.status, msg))
             }
             let path = loc.replacingOccurrences(of: #"^https?://[^/]+"#, with: "", options: .regularExpression)
 
@@ -129,14 +131,14 @@ final class Backend: @unchecked Sendable {
                     let r = try http.request("GET", "\(path)/NextDocument", timeout: 600_000)
                     if r.status == 200 { data = r.body; break }
                     if r.status == 503 { try http.sleep(1); continue }  // busy / not ready yet
-                    throw ScanError.failed("Error obteniendo el documento (HTTP \(r.status)).")
+                    throw ScanError.failed(L("Error obteniendo el documento (HTTP %ld).", r.status))
                 }
             } catch is UsbHttp.Cancelled {
                 // Drop the half-read response, then cancel the job so the head returns.
                 http.abort(job: path)
                 throw ScanError.cancelled
             }
-            guard let data else { throw ScanError.failed("El escáner no entregó la imagen a tiempo.") }
+            guard let data else { throw ScanError.failed(L("El escáner no entregó la imagen a tiempo.")) }
             try data.write(to: url)
             // Tell the scanner we're done (the next NextDocument returns 404 = job finished).
             _ = try? http.request("GET", "\(path)/NextDocument", timeout: 15_000)
@@ -184,7 +186,7 @@ final class UsbHttp {
         }
         found.sort { $0.hp && !$1.hp }
         guard !found.isEmpty else {
-            throw ScanError.failed("No encuentro la impresora por USB. ¿Está encendida y conectada?")
+            throw ScanError.failed(L("No encuentro la impresora por USB. ¿Está encendida y conectada?"))
         }
 
         var busy = false
@@ -205,9 +207,7 @@ final class UsbHttp {
             }
             libusb_close(h)
         }
-        throw ScanError.failed(busy
-            ? "El escáner está en uso por otra app (Captura de Imagen o Vista Previa). Cerrala y probá de nuevo."
-            : "No pude conectarme al escáner por USB.")
+        throw busy ? ScanError.busy : ScanError.failed(L("No pude conectarme al escáner por USB."))
     }
 
     /// Interfaces to try, best first: standard IPP-over-USB alt settings on the highest interface
@@ -267,7 +267,7 @@ final class UsbHttp {
         if got > 0 { buf.append(contentsOf: chunk[0..<Int(got)]) }
         if r == LIBUSB_ERROR_TIMEOUT.rawValue { return false }
         if r != 0 {
-            throw ScanError.failed("Se perdió la conexión USB con el escáner (\(String(cString: libusb_error_name(r)))).")
+            throw ScanError.failed(L("Se perdió la conexión USB con el escáner (%@).", String(cString: libusb_error_name(r))))
         }
         return true
     }
@@ -306,7 +306,7 @@ final class UsbHttp {
             }
             searchFrom = buf.count
             try checkCancel()
-            if Date() > deadline { throw ScanError.failed("El escáner no respondió a tiempo.") }
+            if Date() > deadline { throw ScanError.failed(L("El escáner no respondió a tiempo.")) }
             try fill(timeout: 1000)
         }
     }
@@ -316,7 +316,7 @@ final class UsbHttp {
         buf.reserveCapacity(n)
         while buf.count < n {
             try checkCancel()
-            if Date() > deadline { throw ScanError.failed("El escáner dejó de enviar datos.") }
+            if Date() > deadline { throw ScanError.failed(L("El escáner dejó de enviar datos.")) }
             try fill(timeout: 1000)
         }
         let out = buf.subdata(in: 0..<n)
@@ -333,7 +333,7 @@ final class UsbHttp {
                 libusb_bulk_transfer(handle, epOut, p.baseAddress! + offset, Int32(p.count - offset), &sent, 10_000)
             }
             guard r == 0 || sent > 0 else {
-                throw ScanError.failed("No pude enviar el pedido al escáner (\(String(cString: libusb_error_name(r)))).")
+                throw ScanError.failed(L("No pude enviar el pedido al escáner (%@).", String(cString: libusb_error_name(r))))
             }
             offset += Int(sent)
         }
@@ -354,7 +354,7 @@ final class UsbHttp {
         let lines = raw.trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: "\r\n")
         let parts = lines.first?.split(separator: " ") ?? []
         guard parts.count >= 2, let status = Int(parts[1]) else {
-            throw ScanError.failed("Respuesta inesperada del escáner.")
+            throw ScanError.failed(L("Respuesta inesperada del escáner."))
         }
         var headers: [String: String] = [:]
         for l in lines.dropFirst() {
@@ -367,7 +367,7 @@ final class UsbHttp {
             while true {
                 let line = String(decoding: try readUntil(Data("\r\n".utf8), timeout: timeout), as: UTF8.self)
                 let hex = line.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: ";").first.map(String.init) ?? ""
-                guard let size = Int(hex, radix: 16) else { throw ScanError.failed("Respuesta dañada del escáner.") }
+                guard let size = Int(hex, radix: 16) else { throw ScanError.failed(L("Respuesta dañada del escáner.")) }
                 if size == 0 { _ = try readUntil(Data("\r\n".utf8), timeout: timeout); break }
                 out += try readCount(size, timeout: timeout)
                 _ = try readCount(2, timeout: timeout)

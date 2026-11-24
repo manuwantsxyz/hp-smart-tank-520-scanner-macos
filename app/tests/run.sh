@@ -12,9 +12,9 @@ FLAGS=(-swift-version 5 -target "$(uname -m)-apple-macos14.0" -import-objc-heade
        -Xcc -I"$LIBUSB/include/libusb-1.0" -L"$LIBUSB/lib" -lusb-1.0 -Xlinker -rpath -Xlinker "$LIBUSB/lib")
 
 swiftc "${FLAGS[@]}" -o "$BIN/aspect" "$HERE/aspect/main.swift" \
-  "$APP"/{Model,PreviewCanvas,Imaging,Backend,Batch,Inspector}.swift
+  "$APP"/{Model,PreviewCanvas,Imaging,Backend,Batch,Inspector,L10n}.swift
 "$BIN/aspect"
 [[ "${1:-}" == "--offline" ]] && exit 0
 
-swiftc "${FLAGS[@]}" -O -o "$BIN/runtests" "$HERE/main.swift" "$HERE/PDFCheck.swift" "$APP/Backend.swift" "$APP/Imaging.swift"
+swiftc "${FLAGS[@]}" -O -o "$BIN/runtests" "$HERE/main.swift" "$HERE/PDFCheck.swift" "$APP/Backend.swift" "$APP/Imaging.swift" "$APP/L10n.swift"
 "$BIN/runtests" "$BIN/out"

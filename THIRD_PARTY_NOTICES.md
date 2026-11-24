@@ -9,7 +9,7 @@
 The app bundles libusb **unmodified**, as a separate dynamic library:
 
 ```
-Escáner Libre.app/Contents/Frameworks/libusb-1.0.0.dylib
+HPST520 Scanner.app/Contents/Frameworks/libusb-1.0.0.dylib
 ```
 
 It is built by `scripts/build-libusb.sh` from the official release tarball, which is verified with SHA-256.

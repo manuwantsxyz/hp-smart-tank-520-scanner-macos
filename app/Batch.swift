@@ -39,7 +39,7 @@ struct PagesStrip: View {
             }
             Divider()
             VStack(alignment: .trailing, spacing: 8) {
-                Text(model.pages.isEmpty ? "Sin páginas" : "\(model.pages.count) página\(model.pages.count == 1 ? "" : "s")")
+                Text(model.pages.isEmpty ? L("Sin páginas") : (model.pages.count == 1 ? L("1 página") : L("%ld páginas", model.pages.count)))
                     .font(.headline)
                 Button("Guardar PDF") { model.savePDF() }
                     .buttonStyle(.borderedProminent)

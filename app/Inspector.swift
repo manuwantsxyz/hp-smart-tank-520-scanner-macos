@@ -80,7 +80,7 @@ struct Inspector: View {
                 } else {
                     sizeFields
                     if model.selections.count > 1 {
-                        LabeledContent("Elementos", value: "\(model.selections.count) (un archivo por elemento)")
+                        LabeledContent("Elementos", value: L("%ld (un archivo por elemento)", model.selections.count))
                             .foregroundStyle(.secondary)
                     }
                     Button("Quitar selección") { model.removeActiveSelection() }
@@ -105,7 +105,7 @@ struct Inspector: View {
                 }
                 TextField("Nombre", text: $model.baseName)
                 if model.batchMode {
-                    LabeledContent("Formato", value: "PDF de varias páginas")
+                    LabeledContent("Formato", value: L("PDF de varias páginas"))
                 } else {
                     Picker("Formato", selection: $model.format) {
                         ForEach(OutputFormat.allCases) { Text($0.label).tag($0) }
@@ -119,11 +119,11 @@ struct Inspector: View {
                     Text("Mostrar en Finder").tag("finder")
                     Divider()
                     ForEach(editorApps) { app in
-                        Label { Text("Abrir en \(app.name)") } icon: { Image(nsImage: app.icon) }
+                        Label { Text(L("Abrir en %@", app.name)) } icon: { Image(nsImage: app.icon) }
                             .tag("app:" + app.url.path)
                     }
                     if let a = model.afterApp, !editorApps.contains(where: { $0.url == a }) {
-                        Text("Abrir en \(EditorApp(url: a).name)").tag("app:" + a.path)
+                        Text(L("Abrir en %@", EditorApp(url: a).name)).tag("app:" + a.path)
                     }
                     Divider()
                     Text("Otra app…").tag("other")
@@ -188,7 +188,7 @@ struct Inspector: View {
         }
     }
 
-    private func slider(_ title: String, _ value: Binding<Double>, _ range: ClosedRange<Double>) -> some View {
+    private func slider(_ title: LocalizedStringKey, _ value: Binding<Double>, _ range: ClosedRange<Double>) -> some View {
         LabeledContent(title) {
             Slider(value: value, in: range).controlSize(.small)
         }

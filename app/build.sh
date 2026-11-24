@@ -1,12 +1,13 @@
 #!/bin/zsh
-# Construye "Escáner Libre.app" (universal: Apple Silicon + Intel, macOS 14+) en build/.
-#   ./build.sh            → build/Escáner Libre.app
+# Construye "HPST520 Scanner.app" (universal: Apple Silicon + Intel, macOS 14+) en build/.
+#   ./build.sh            → build/HPST520 Scanner.app
 #   ./build.sh --install  → además la copia a ~/Applications
-#   ./build.sh --release  → además arma dist/Escaner-Libre-<versión>-macOS.zip
+#   ./build.sh --release  → además arma dist/HPST520-Scanner-<versión>-macOS.zip
 set -euo pipefail
 HERE="${0:A:h}"
 ROOT="${HERE:h}"
-NAME="Escáner Libre"
+NAME="HPST520 Scanner"
+EXE="HPST520Scanner"
 VERSION="${VERSION:-1.0.0}"
 BUILD="$HERE/build"
 APP="$BUILD/$NAME.app"
@@ -15,14 +16,14 @@ LIBUSB="$ROOT/vendor/libusb"
 "$ROOT/scripts/build-libusb.sh"
 
 rm -rf "$BUILD" && mkdir -p "$BUILD"
-SOURCES=("$HERE"/{App,Backend,Batch,Demo,Imaging,Model,Inspector,PreviewCanvas}.swift)
+SOURCES=("$HERE"/{App,Backend,Batch,Demo,Imaging,L10n,Model,Inspector,PreviewCanvas}.swift)
 for ARCH in arm64 x86_64; do
   swiftc -swift-version 5 -O -parse-as-library -target "$ARCH-apple-macos14.0" \
     -import-objc-header "$HERE/CLibusb.h" -Xcc -I"$LIBUSB/include/libusb-1.0" \
     -L"$LIBUSB/lib" -lusb-1.0 -Xlinker -rpath -Xlinker @executable_path/../Frameworks \
-    -o "$BUILD/EscanerLibre-$ARCH" "${SOURCES[@]}"
+    -o "$BUILD/$EXE-$ARCH" "${SOURCES[@]}"
 done
-lipo -create -output "$BUILD/EscanerLibre" "$BUILD"/EscanerLibre-{arm64,x86_64}
+lipo -create -output "$BUILD/$EXE" "$BUILD/$EXE"-{arm64,x86_64}
 
 # Icono: SF Symbol renderizado a .icns
 swift -swift-version 5 "$HERE/make_icon.swift" "$BUILD/icon.png"
@@ -34,7 +35,11 @@ done
 iconutil -c icns "$BUILD/AppIcon.iconset" -o "$BUILD/AppIcon.icns"
 
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
-cp "$BUILD/EscanerLibre" "$APP/Contents/MacOS/"
+cp "$BUILD/$EXE" "$APP/Contents/MacOS/"
+# Languages: English (also the fallback for any other language) and Spanish (the keys themselves).
+cp -R "$HERE"/Resources/*.lproj "$APP/Contents/Resources/"
+mkdir -p "$APP/Contents/Resources/es.lproj"
+echo '/* Spanish: the keys are already Spanish. */' > "$APP/Contents/Resources/es.lproj/Localizable.strings"
 cp "$BUILD/AppIcon.icns" "$APP/Contents/Resources/"
 cp "$LIBUSB/lib/libusb-1.0.0.dylib" "$APP/Contents/Frameworks/"
 cp "$ROOT/LICENSE" "$ROOT/THIRD_PARTY_NOTICES.md" "$APP/Contents/Resources/" 2>/dev/null || true
@@ -47,7 +52,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleName</key><string>$NAME</string>
   <key>CFBundleDisplayName</key><string>$NAME</string>
   <key>CFBundleIdentifier</key><string>io.github.manuwantsxyz.escaner-libre</string>
-  <key>CFBundleExecutable</key><string>EscanerLibre</string>
+  <key>CFBundleExecutable</key><string>$EXE</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
@@ -55,8 +60,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
   <key>NSHighResolutionCapable</key><true/>
-  <key>CFBundleDevelopmentRegion</key><string>es</string>
-  <key>NSHumanReadableCopyright</key><string>Licencia MIT. No afiliado a HP Inc.</string>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleLocalizations</key><array><string>en</string><string>es</string></array>
+  <key>NSHumanReadableCopyright</key><string>MIT License. Not affiliated with HP Inc.</string>
 </dict>
 </plist>
 PLIST
@@ -78,7 +84,7 @@ fi
 
 if [[ " $* " == *" --release "* ]]; then
   mkdir -p "$ROOT/dist"
-  ZIP="$ROOT/dist/Escaner-Libre-$VERSION-macOS.zip"
+  ZIP="$ROOT/dist/HPST520-Scanner-$VERSION-macOS.zip"
   rm -f "$ZIP"
   ditto -c -k --keepParent "$APP" "$ZIP"
   echo "Release: $ZIP"

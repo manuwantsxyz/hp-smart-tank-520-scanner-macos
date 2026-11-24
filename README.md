@@ -1,6 +1,6 @@
 # HP Smart Tank 520 Scanner for macOS
 
-**Escáner Libre** is a native macOS app for scanning with the **HP Smart Tank 520** over USB. It needs **no HP drivers** and bypasses the macOS service that leaves Image Capture stuck on *"Waiting for scanner"*.
+**HPST520 Scanner** is a native macOS app for scanning with the **HP Smart Tank 520** over USB. It needs **no HP drivers** and bypasses the macOS service that leaves Image Capture stuck on *"Waiting for scanner"*.
 
 It follows the Image Capture workflow: a quick overview of the glass, then a high-resolution scan of only the area you select. On top of that it adds:
 
@@ -15,7 +15,7 @@ It follows the Image Capture workflow: a quick overview of the glass, then a hig
 - Color, grayscale and black & white, rotation, brightness, contrast, sharpness and threshold.
 - Save as JPEG, PNG, TIFF, HEIC or PDF. **Open With** any app (Affinity, Photoshop, Preview…), **Copy** to the clipboard, or drag the thumbnail out.
 
-> The app's interface is in Spanish.
+> The app is in **English and Spanish** and follows your Mac's language. Other system languages get English.
 >
 > Not affiliated with HP Inc. "HP" and "Smart Tank" are trademarks of HP Inc. and are used only to describe compatibility.
 
@@ -47,25 +47,25 @@ Document PDF mode for books and multi-page documents:
 
 ## Install
 
-1. Download `Escaner-Libre-…-macOS.zip` from [Releases](../../releases) and unzip it.
-2. Move **Escáner Libre.app** to Applications.
+1. Download `HPST520-Scanner-…-macOS.zip` from [Releases](../../releases) and unzip it.
+2. Move **HPST520 Scanner.app** to Applications.
 3. The app is not notarized by Apple, so the first time macOS will say it can't verify the developer. To open it, use one of these:
    - In Finder, **right-click → Open → Open**.
-   - Or go to **System Settings → Privacy & Security**, scroll to the "Escáner Libre" notice and click **Open Anyway**.
-   - Or run in Terminal: `xattr -dr com.apple.quarantine "/Applications/Escáner Libre.app"`
+   - Or go to **System Settings → Privacy & Security**, scroll to the "HPST520 Scanner" notice and click **Open Anyway**.
+   - Or run in Terminal: `xattr -dr com.apple.quarantine "/Applications/HPST520 Scanner.app"`
 
 Quit **Image Capture** and **Preview** while scanning, because the scanner serves one app at a time.
 
 ## Quick start
 
-| Action | How (Spanish UI label) |
+| Action | How |
 |---|---|
-| Preview the glass | **Vista general** (⌥⌘R) |
+| Preview the glass | **Overview** (⌥⌘R) |
 | Select an area | Drag on the preview. Hold ⇧ or ⌘ to add more areas |
-| Lock the aspect ratio | Details → Área → **Proporción**. The ↔ button switches portrait/landscape |
-| Scan | **Escanear** (⌘R). Cancel with ⌘. |
-| Book / multi-page PDF | **Documento PDF** mode (⌘B) → **Escanear página** → **Guardar PDF** (⌘S) |
-| Copy the last scan | **Copiar** or ⌘C |
+| Lock the aspect ratio | Details → Area → **Aspect Ratio**. The ↔ button switches portrait/landscape |
+| Scan | **Scan** (⌘R). Cancel with ⌘. |
+| Book / multi-page PDF | **PDF Document** mode (⌘B) → **Scan Page** → **Save PDF** (⌘S) |
+| Copy the last scan | **Copy** or ⌘C |
 
 ## Why Image Capture and the HP driver fail
 
@@ -84,9 +84,9 @@ The full write-up is in [docs/diagnosis.md](docs/diagnosis.md).
 You need the Xcode Command Line Tools (`xcode-select --install`).
 
 ```sh
-app/build.sh             # → app/build/Escáner Libre.app (universal)
+app/build.sh             # → app/build/HPST520 Scanner.app (universal)
 app/build.sh --install   # also copies it to ~/Applications
-app/build.sh --release   # also creates dist/Escaner-Libre-<version>-macOS.zip
+app/build.sh --release   # also creates dist/HPST520-Scanner-<version>-macOS.zip
 app/tests/run.sh         # tests (the scanner tests need the printer connected)
 app/tests/run.sh --offline
 ```
@@ -102,13 +102,14 @@ SIGN_ID="Developer ID Application: …" app/build.sh --release
 To regenerate the screenshots:
 
 ```sh
-ESCANER_DEMO=/tmp/shots "app/build/Escáner Libre.app/Contents/MacOS/EscanerLibre"
+ESCANER_DEMO=/tmp/shots "app/build/HPST520 Scanner.app/Contents/MacOS/HPST520Scanner" -AppleLanguages "(en)"
 ```
 
 ### Layout
 
 ```
 app/        SwiftUI app: Backend.swift (eSCL-over-USB driver), model, UI, image processing, PDF and OCR
+app/Resources/  Translations (en.lproj). The Spanish source strings are the keys; check with scripts/check-l10n.py
 app/tests/  Tests (with and without the scanner)
 cli/        Command-line version in Python (hpscan.py), where the project started
 scripts/    libusb build

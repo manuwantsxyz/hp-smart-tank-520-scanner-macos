@@ -8,13 +8,13 @@ enum SizePreset: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .full: return "Vidrio completo"
+        case .full: return L("Vidrio completo")
         case .a4: return "A4"
-        case .letter: return "Carta (US Letter)"
-        case .legal: return "Oficio (US Legal)"
+        case .letter: return L("Carta (US Letter)")
+        case .legal: return L("Oficio (US Legal)")
         case .a5: return "A5"
-        case .photo4x6: return "Foto 10 × 15 cm"
-        case .photo5x7: return "Foto 13 × 18 cm"
+        case .photo4x6: return L("Foto 10 × 15 cm")
+        case .photo5x7: return L("Foto 13 × 18 cm")
         }
     }
     /// Size in inches (nil = whole glass).
@@ -53,7 +53,7 @@ enum AspectLock: String, CaseIterable, Identifiable {
     }
     var short: String {
         switch self {
-        case .free: return "Libre"
+        case .free: return L("Libre")
         case .r1x1: return "1:1"
         case .r4x5: return "4:5"
         case .r3x4: return "3:4"
@@ -69,18 +69,18 @@ enum AspectLock: String, CaseIterable, Identifiable {
     }
     var label: String {
         switch self {
-        case .free: return "Libre"
-        case .r1x1: return "1:1 · Cuadrado (Instagram)"
-        case .r4x5: return "4:5 · Instagram vertical"
-        case .r3x4: return "3:4 · Instagram, tablet"
-        case .r2x3: return "2:3 · Pinterest, foto 10×15"
-        case .r9x16: return "9:16 · Stories, Reels, TikTok"
-        case .r5x4: return "5:4 · Foto 8×10"
-        case .r4x3: return "4:3 · Pantalla clásica"
-        case .r3x2: return "3:2 · Foto clásica"
-        case .r16x9: return "16:9 · YouTube, presentaciones"
-        case .r191x1: return "1.91:1 · Link de Facebook / LinkedIn"
-        case .r3x1: return "3:1 · Banner (portada de X)"
+        case .free: return L("Libre")
+        case .r1x1: return L("1:1 · Cuadrado (Instagram)")
+        case .r4x5: return L("4:5 · Instagram vertical")
+        case .r3x4: return L("3:4 · Instagram, tablet")
+        case .r2x3: return L("2:3 · Pinterest, foto 10×15")
+        case .r9x16: return L("9:16 · Stories, Reels, TikTok")
+        case .r5x4: return L("5:4 · Foto 8×10")
+        case .r4x3: return L("4:3 · Pantalla clásica")
+        case .r3x2: return L("3:2 · Foto clásica")
+        case .r16x9: return L("16:9 · YouTube, presentaciones")
+        case .r191x1: return L("1.91:1 · Link de Facebook / LinkedIn")
+        case .r3x1: return L("3:1 · Banner (portada de X)")
         }
     }
     /// The same ratio in the other orientation.
@@ -104,7 +104,7 @@ enum AspectLock: String, CaseIterable, Identifiable {
 enum Units: String, CaseIterable, Identifiable {
     case cm, mm, inch, px
     var id: String { rawValue }
-    var label: String { self == .inch ? "pulg." : rawValue }
+    var label: String { self == .inch ? L("pulg.") : rawValue }
 }
 
 enum AutoSelect: String, CaseIterable, Identifiable {
@@ -112,9 +112,9 @@ enum AutoSelect: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .off: return "Desactivada"
-        case .enclosing: return "Detectar recuadro"
-        case .separate: return "Detectar elementos separados"
+        case .off: return L("Desactivada")
+        case .enclosing: return L("Detectar recuadro")
+        case .separate: return L("Detectar elementos separados")
         }
     }
 }
@@ -129,8 +129,8 @@ enum DeviceState: Equatable {
     case checking, ready, busy(String), unavailable(String)
     var label: String {
         switch self {
-        case .checking: return "Buscando…"
-        case .ready: return "Listo"
+        case .checking: return L("Buscando…")
+        case .ready: return L("Listo")
         case .busy(let s): return s
         case .unavailable(let s): return s
         }
@@ -243,7 +243,7 @@ final class ScannerModel: ObservableObject {
     @Published var showDetails = true
 
     private let workDir: URL = {
-        let d = FileManager.default.temporaryDirectory.appendingPathComponent("EscanerHP-\(UUID().uuidString)")
+        let d = FileManager.default.temporaryDirectory.appendingPathComponent("HPST520Scanner-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: d, withIntermediateDirectories: true)
         return d
     }()
@@ -259,7 +259,7 @@ final class ScannerModel: ObservableObject {
         autoSelect = AutoSelect(rawValue: d.string(forKey: "auto") ?? "") ?? .enclosing
         let pictures = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask).first!
         folder = d.string(forKey: "folder").map { URL(fileURLWithPath: $0) } ?? pictures
-        baseName = d.string(forKey: "name") ?? "Escaneo"
+        baseName = d.string(forKey: "name") ?? L("Escaneo")
         format = OutputFormat(rawValue: d.string(forKey: "format") ?? "") ?? .jpeg
         combinePDF = d.object(forKey: "combine") as? Bool ?? true
         afterScan = AfterScan(rawValue: d.string(forKey: "after") ?? "") ?? .finder
@@ -443,9 +443,9 @@ final class ScannerModel: ObservableObject {
                 switch r {
                 case .success(let i):
                     self.info = i
-                    self.device = (i.state == "Idle") ? .ready : .busy("Ocupado (\(i.state ?? "?"))")
+                    self.device = (i.state == "Idle") ? .ready : .busy(L("Ocupado (%@)", i.state ?? "?"))
                 case .failure(let e):
-                    self.device = .unavailable(e.localizedDescription.contains("en uso") ? "En uso por otra app" : "No disponible")
+                    if case ScanError.busy = e { self.device = .unavailable(L("En uso por otra app")) } else { self.device = .unavailable(L("No disponible")) }
                     self.showError(e)
                 }
             }
@@ -465,7 +465,7 @@ final class ScannerModel: ObservableObject {
         Task.detached {
             do {
                 let url = try Backend.shared.scan(dpi: 75, color: color, region: nil, to: target)
-                guard let img = Imaging.load(url) else { throw ScanError.failed("No pude leer la vista general.") }
+                guard let img = Imaging.load(url) else { throw ScanError.failed(L("No pude leer la vista general.")) }
                 let detected = Self.detect(mode, in: img)
                 await MainActor.run {
                     self.activity = .idle
@@ -479,7 +479,7 @@ final class ScannerModel: ObservableObject {
             } catch {
                 await MainActor.run {
                     self.activity = .idle
-                    if case ScanError.cancelled = error { self.message = "Vista general cancelada." } else { self.showError(error) }
+                    if case ScanError.cancelled = error { self.message = L("Vista general cancelada.") } else { self.showError(error) }
                 }
             }
         }
@@ -501,7 +501,7 @@ final class ScannerModel: ObservableObject {
         let found = Self.detect(autoSelect == .off ? .enclosing : autoSelect, in: img)
         selections = found.map { conformed($0, inscribe: true) }
         activeID = found.first?.id
-        if found.isEmpty { message = "No encontré nada sobre el vidrio."; isError = false }
+        if found.isEmpty { message = L("No encontré nada sobre el vidrio."); isError = false }
     }
 
     // MARK: Scan
@@ -522,8 +522,8 @@ final class ScannerModel: ObservableObject {
         let ratio = selections.isEmpty ? nil : aspect.ratio
         let count = sels.count
         stopCountdown()
-        let label = batch ? "Escaneando página \(pages.count + 1) a \(dpi) dpi…"
-            : (count > 1 ? "Escaneando \(count) elementos a \(dpi) dpi…" : "Escaneando a \(dpi) dpi…")
+        let label = batch ? L("Escaneando página %ld a %ld dpi…", pages.count + 1, dpi)
+            : (count > 1 ? L("Escaneando %ld elementos a %ld dpi…", count, dpi) : L("Escaneando a %ld dpi…", dpi))
         activity = .scanning(Date(), label)
         message = nil
         isError = false
@@ -534,7 +534,7 @@ final class ScannerModel: ObservableObject {
             do {
                 let url = try Backend.shared.scan(dpi: dpi, color: kind.driverColor, region: region, to: target)
                 await MainActor.run { self.activity = .processing }
-                guard let raw = Imaging.load(url) else { throw ScanError.failed("No pude leer la imagen escaneada.") }
+                guard let raw = Imaging.load(url) else { throw ScanError.failed(L("No pude leer la imagen escaneada.")) }
                 var images: [CGImage] = []
                 for sel in sels {
                     let piece = Imaging.extract(sel, from: raw, scanned: scanned)
@@ -562,8 +562,8 @@ final class ScannerModel: ObservableObject {
                         self.activity = .idle
                         self.device = .ready
                         self.pages += added
-                        self.message = added.count == 1 ? "Página \(self.pages.count) agregada."
-                                                        : "Páginas \(self.pages.count - added.count + 1)–\(self.pages.count) agregadas."
+                        self.message = added.count == 1 ? L("Página %ld agregada.", self.pages.count)
+                                                        : L("Páginas %ld–%ld agregadas.", self.pages.count - added.count + 1, self.pages.count)
                         if self.continuous { self.startCountdown() }
                     }
                     return
@@ -577,14 +577,14 @@ final class ScannerModel: ObservableObject {
                     self.activity = .idle
                     self.device = .ready
                     self.results = results
-                    self.message = saved.count == 1 ? "Guardado: \(saved[0].lastPathComponent)"
-                                                    : "Guardados \(saved.count) archivos en \(folder.lastPathComponent)"
+                    self.message = saved.count == 1 ? L("Guardado: %@", saved[0].lastPathComponent)
+                                                    : L("Guardados %ld archivos en %@", saved.count, folder.lastPathComponent)
                     self.runAfterScan(saved)
                 }
             } catch {
                 await MainActor.run {
                     self.activity = .idle
-                    if case ScanError.cancelled = error { self.message = "Escaneo cancelado." } else { self.showError(error) }
+                    if case ScanError.cancelled = error { self.message = L("Escaneo cancelado.") } else { self.showError(error) }
                 }
             }
         }
@@ -645,17 +645,17 @@ final class ScannerModel: ObservableObject {
         guard !pages.isEmpty else { return }
         if confirm {
             let a = NSAlert()
-            a.messageText = "¿Descartar \(pages.count) página\(pages.count == 1 ? "" : "s")?"
-            a.informativeText = "Las páginas escaneadas que todavía no guardaste se van a perder."
-            a.addButton(withTitle: "Descartar")
-            a.addButton(withTitle: "Cancelar")
+            a.messageText = pages.count == 1 ? L("¿Descartar 1 página?") : L("¿Descartar %ld páginas?", pages.count)
+            a.informativeText = L("Las páginas escaneadas que todavía no guardaste se van a perder.")
+            a.addButton(withTitle: L("Descartar"))
+            a.addButton(withTitle: L("Cancelar"))
             a.buttons[0].hasDestructiveAction = true
             guard a.runModal() == .alertFirstButtonReturn else { return }
         }
         stopCountdown()
         pages.forEach { try? FileManager.default.removeItem(at: $0.url) }
         pages = []
-        message = "Documento descartado."
+        message = L("Documento descartado.")
         isError = false
     }
 
@@ -667,16 +667,16 @@ final class ScannerModel: ObservableObject {
         let total = list.count
         let firstThumb = pages[0].thumb
         let ocr = self.ocr, folder = self.folder
-        let base = baseName.trimmingCharacters(in: .whitespaces).isEmpty ? "Escaneo" : baseName
-        activity = .saving("Armando el PDF…")
+        let base = baseName.trimmingCharacters(in: .whitespaces).isEmpty ? L("Escaneo") : baseName
+        activity = .saving(L("Armando el PDF…"))
         Task.detached {
             do {
                 try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
                 let url = Imaging.nextFreeURL(folder: folder, base: base, ext: "pdf")
                 try Imaging.writePDF(pages: list, to: url, ocr: ocr) { i in
                     Task { @MainActor in
-                        self.activity = .saving(ocr ? "Reconociendo texto y guardando página \(i + 1) de \(total)…"
-                                                    : "Guardando página \(i + 1) de \(total)…")
+                        self.activity = .saving(ocr ? L("Reconociendo texto y guardando página %ld de %ld…", i + 1, total)
+                                                    : L("Guardando página %ld de %ld…", i + 1, total))
                     }
                 }
                 await MainActor.run {
@@ -684,7 +684,7 @@ final class ScannerModel: ObservableObject {
                     self.pages.forEach { try? FileManager.default.removeItem(at: $0.url) }
                     self.pages = []
                     self.results = [ScanResult(url: url, image: firstThumb)]
-                    self.message = "Guardado: \(url.lastPathComponent) (\(total) página\(total == 1 ? "" : "s"))"
+                    self.message = total == 1 ? L("Guardado: %@ (1 página)", url.lastPathComponent) : L("Guardado: %@ (%ld páginas)", url.lastPathComponent, total)
                     self.isError = false
                     self.runAfterScan([url])
                 }
@@ -750,8 +750,8 @@ final class ScannerModel: ObservableObject {
         let panel = NSOpenPanel()
         panel.directoryURL = URL(fileURLWithPath: "/Applications")
         panel.allowedContentTypes = [.application]
-        panel.prompt = "Abrir"
-        panel.message = "Elegí la app con la que querés abrir el escaneo"
+        panel.prompt = L("Abrir")
+        panel.message = L("Elegí la app con la que querés abrir el escaneo")
         return panel.runModal() == .OK ? panel.url : nil
     }
 
@@ -769,7 +769,7 @@ final class ScannerModel: ObservableObject {
             return item
         }
         pb.writeObjects(items)
-        message = results.count == 1 ? "Copiado al portapapeles." : "Copiadas \(results.count) imágenes al portapapeles."
+        message = results.count == 1 ? L("Copiado al portapapeles.") : L("Copiadas %ld imágenes al portapapeles.", results.count)
         isError = false
     }
 
@@ -785,7 +785,7 @@ final class ScannerModel: ObservableObject {
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
         panel.directoryURL = folder
-        panel.prompt = "Elegir"
+        panel.prompt = L("Elegir")
         if panel.runModal() == .OK, let u = panel.url { folder = u }
     }
 

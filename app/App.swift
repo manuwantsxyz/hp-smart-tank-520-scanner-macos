@@ -1,4 +1,4 @@
-// Escáner Libre — la experiencia de escaneo de Captura de Imagen para la HP Smart Tank 520 (y otras impresoras eSCL),
+// HPST520 Scanner — la experiencia de escaneo de Captura de Imagen para la HP Smart Tank 520 (y otras impresoras eSCL),
 // hablando eSCL directo por USB (sin ippusbd ni drivers de HP).
 import AppKit
 import SwiftUI
@@ -9,7 +9,7 @@ struct EscanerHPApp: App {
     @StateObject private var model = ScannerModel()
 
     var body: some Scene {
-        Window("Escáner Libre", id: "main") {
+        Window("HPST520 Scanner", id: "main") {
             ContentView(model: model)
                 .frame(minWidth: 900, minHeight: 620)
         }
@@ -72,10 +72,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard let m = ScannerModel.current, !m.pages.isEmpty else { return .terminateNow }
         let a = NSAlert()
-        a.messageText = "Tenés \(m.pages.count) página\(m.pages.count == 1 ? "" : "s") sin guardar"
-        a.informativeText = "Si salís ahora, el documento en curso se pierde."
-        a.addButton(withTitle: "Cancelar")
-        a.addButton(withTitle: "Salir sin guardar")
+        a.messageText = m.pages.count == 1 ? L("Tenés 1 página sin guardar") : L("Tenés %ld páginas sin guardar", m.pages.count)
+        a.informativeText = L("Si salís ahora, el documento en curso se pierde.")
+        a.addButton(withTitle: L("Cancelar"))
+        a.addButton(withTitle: L("Salir sin guardar"))
         a.buttons[1].hasDestructiveAction = true
         return a.runModal() == .alertSecondButtonReturn ? .terminateNow : .terminateCancel
     }
@@ -110,7 +110,7 @@ struct ContentView: View {
                 Divider()
                 BottomBar(model: model)
             }
-            .navigationTitle(model.info?.model ?? "Escáner Libre")
+            .navigationTitle(model.info?.model ?? "HPST520 Scanner")
         }
         .onAppear {
             if Demo.outDir != nil { Task { await Demo.run(model) } } else { model.refreshDevice() }
@@ -124,7 +124,7 @@ struct ContentView: View {
                     Image(systemName: "scanner")
                         .foregroundStyle(Color.accentColor)
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(model.info?.model ?? "Impresora USB")
+                        Text(model.info?.model ?? L("Impresora USB"))
                             .lineLimit(1)
                         Text("USB · \(model.device.label)")
                             .font(.caption)
@@ -158,7 +158,7 @@ struct BottomBar: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Button(model.showDetails ? "Ocultar detalles" : "Mostrar detalles") {
+            Button(model.showDetails ? L("Ocultar detalles") : L("Mostrar detalles")) {
                 withAnimation(.easeInOut(duration: 0.2)) { model.showDetails.toggle() }
             }
             Spacer()
@@ -173,7 +173,7 @@ struct BottomBar: View {
                     .buttonStyle(.borderedProminent)
             } else {
                 Button("Vista general") { model.overview() }
-                Button(model.batchMode ? "Escanear página" : "Escanear") { model.scan() }
+                Button(model.batchMode ? L("Escanear página") : L("Escanear")) { model.scan() }
                     .buttonStyle(.borderedProminent)
             }
         }
@@ -188,7 +188,7 @@ struct BottomBar: View {
             HStack(spacing: 8) {
                 Image(systemName: "book.pages")
                     .foregroundStyle(Color.accentColor)
-                Text("Cambiá de página · próximo escaneo en \(model.countdown ?? 0) s")
+                Text(L("Cambiá de página · próximo escaneo en %ld s", model.countdown ?? 0))
                     .monospacedDigit()
             }
         case .saving(let label):
@@ -209,12 +209,12 @@ struct BottomBar: View {
                 }
             } else {
                 Text(model.selections.isEmpty
-                     ? "Se escaneará: \(model.sizePreset.label)"
-                     : (model.selections.count == 1 ? "Se escaneará la selección" : "Se escanearán \(model.selections.count) elementos"))
+                     ? L("Se escaneará: %@", model.sizePreset.label)
+                     : (model.selections.count == 1 ? L("Se escaneará la selección") : L("Se escanearán %ld elementos", model.selections.count)))
                     .foregroundStyle(.secondary)
             }
         case .overview(let start):
-            progress("Vista general…", since: start)
+            progress(L("Vista general…"), since: start)
         case .scanning(let start, let label):
             progress(label, since: start)
         case .processing:
@@ -259,7 +259,7 @@ struct ResultsBar: View {
             let first = model.results.first?.url
             VStack(alignment: .leading, spacing: 2) {
                 Text(model.results.count == 1 ? (first?.lastPathComponent ?? "")
-                                               : "\(model.results.count) archivos")
+                                               : L("%ld archivos", model.results.count))
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Text((first?.deletingLastPathComponent().path ?? "")
@@ -301,7 +301,7 @@ struct ResultsBar: View {
                 Button {
                     model.openResults(with: d.url)
                 } label: {
-                    Label { Text("\(d.name) (predeterminada)") } icon: { Image(nsImage: d.icon) }
+                    Label { Text(L("%@ (predeterminada)", d.name)) } icon: { Image(nsImage: d.icon) }
                 }
                 Divider()
             }
